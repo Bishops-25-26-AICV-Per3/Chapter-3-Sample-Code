@@ -18,6 +18,12 @@ class Model():
             strides = 4,
             activation = "relu",
         ))
+        self.model.add(tf.keras.layers.Flatten())
+        # Dense layers aka Linear or Fully-connected layers
+        # The section at the end is aka as MLP = Multi-Layer Perceptron
+
+        # The only input to the constructor is the number of output features.
+        self.model.add(tf.keras.layers.Dense(2048))
 
 def main():
     model = Model(INPUT_SHAPE)

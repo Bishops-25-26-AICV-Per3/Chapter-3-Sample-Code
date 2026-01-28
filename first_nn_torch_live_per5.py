@@ -15,6 +15,13 @@ class Model(torch.nn.Module):
             stride = 4,
         )
         self.relu = torch.nn.ReLU()
+        self.flatten = torch.nn.Flatten()
+        # Linear layers aka Dense or Fully-Connected layers
+        # This section is known as MLP = Multi-Layer Perceptron
+        self.linear1 = torch.nn.Linear(
+            in_features = 145200, # Waaay too big
+            out_features = 2048,
+        )
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         """Execute the forward pass of the CNN."""
@@ -24,10 +31,15 @@ class Model(torch.nn.Module):
         y = self.conv1(y)
         y = self.relu(y)
         print(f"{'After 1st convolution:':>30} {y.shape}")
+        y = self.flatten(y)
+        print(f"{'After Flatten:':>30} {y.shape}")
+        y = self.relu(self.linear1(y))
+        print(f"{'After 1st Linear Layer:':>30} {y.shape}")
 
 
 def main():
     x = torch.rand(INPUT_SHAPE)
+    x = torch.unsqueeze(x, 0)
     model = Model(INPUT_SHAPE)
     model(x)
 
