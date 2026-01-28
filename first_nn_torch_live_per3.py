@@ -27,6 +27,17 @@ class Model(torch.nn.Module):
             stride = 2,
         )
 
+        ... # More convolution blocks here
+
+        self.flatten = torch.nn.Flatten()
+        # Linear layer also called Fully-Connected or Dense layer
+        # This section is also called MLP = Multi-Layer Perceptron
+        self.linear1 = torch.nn.Linear(
+            in_features = ,
+            out_features = ,
+        )
+
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Run a forward pass of the CNN."""
         print(f"{'Input Shape:':>30}", x.shape)
@@ -40,6 +51,8 @@ class Model(torch.nn.Module):
         print(f"{'After 2nd Convolution:':>30}", y.shape)
         y = self.maxpool(y)
         print(f"{'After 1st MaxPool:':>30}", y.shape)
+        y = self.flatten(y)
+        print(f"{'After Flatten:':>30}", y.shape)
         return y
 
 
@@ -47,6 +60,7 @@ class Model(torch.nn.Module):
 def main():
     model = Model(INPUT_SHAPE)
     x = torch.rand(INPUT_SHAPE)
+    x = torch.unsqueeze(x, 0)
     y = model(x)
 
 if __name__ == "__main__":
