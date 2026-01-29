@@ -1,6 +1,39 @@
+import pathlib
+
 import torch
+import cv2
 
 INPUT_SHAPE = (3, 224, 224)
+IMAGE_PATH = "../animals"
+
+class Dataset(torch.utils.data.Dataset):
+    """Represent the dataset as an object"""
+    def __init__(self, image_path: pathlib.Path):
+        self.class_names = []
+        self.images = []
+        for folder in image_path.iterdir():
+            if folder.is_dir():
+                self.class_names.append(folder.name)
+                for img in folder.iterdir():
+                    img = cv2.imread(img)
+                    if img is not None:
+                        img = cv2.resize(img, INPUT_SHAPE[1:])
+                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                        img = img / 255.0
+                        # Move channels first
+                        img = img.transpose([2, 0, 1])
+                        img = torch.tensor(
+                            img,
+                            dtype=torch.float32,
+                            device='mps', # or 'cuda' or ignore it
+                        )
+                        label = torch.tensor(
+                            self.class_names.index(folder),
+                            dtype=torch.float32,
+                            device='mps', # or 'cuda'  or ignore it
+                        )
+                        self.images.append((img, label))
+
 
 class Model(torch.nn.Module):
     """Represent the CNN as an object."""
@@ -38,10 +71,12 @@ class Model(torch.nn.Module):
 
 
 def main():
-    x = torch.rand(INPUT_SHAPE)
-    x = torch.unsqueeze(x, 0)
-    model = Model(INPUT_SHAPE)
-    model(x)
+    dataset = Dataset(pathlib.Path(IMAGE_PATH))
+
+    # x = torch.rand(INPUT_SHAPE)
+    # x = torch.unsqueeze(x, 0)
+    # model = Model(INPUT_SHAPE)
+    # model(x)
 
 if __name__ == "__main__":
     main()
