@@ -1,14 +1,26 @@
 import pathlib
+import time
+import atexit
 
 import torch
 import cv2
 
 INPUT_SHAPE = (3, 224, 224)
 IMAGE_PATH = "../animals"
+TIME_STAMP = time.strftime("%Y_%m_%d_%H_%M")
+
+@atexit.register
+def save_at_end() -> None:
+    # Torch
+    torch.save(model, "saves/model_final_" + TIME_STAMP + ".model")
+    # TF
+    # model.model.save("saves/model_final_" + TIME_STAMP)
+
 
 class Dataset(torch.utils.data.Dataset):
     """Represent the dataset as an object"""
     def __init__(self, image_path: pathlib.Path):
+        print("Loading images...")
         self.class_names = []
         self.images = []
         for folder in image_path.iterdir():
@@ -28,11 +40,12 @@ class Dataset(torch.utils.data.Dataset):
                             device='mps', # or 'cuda' or ignore it
                         )
                         label = torch.tensor(
-                            self.class_names.index(folder),
+                            self.class_names.index(folder.name),
                             dtype=torch.float32,
                             device='mps', # or 'cuda'  or ignore it
                         )
                         self.images.append((img, label))
+        print("Done loading images.")
 
 
 class Model(torch.nn.Module):
@@ -69,13 +82,20 @@ class Model(torch.nn.Module):
         y = self.relu(self.linear1(y))
         print(f"{'After 1st Linear Layer:':>30} {y.shape}")
 
+def save_code() -> None:
+    with open(__file__, "r") as f:
+        this_code = f.read()
+    with open("saves/code_" + TIME_STAMP + ".py", "w") as f:
+        print(this_code, file=f)
 
 def main():
+    global model, epoch
+    save_code()
     dataset = Dataset(pathlib.Path(IMAGE_PATH))
 
     # x = torch.rand(INPUT_SHAPE)
     # x = torch.unsqueeze(x, 0)
-    # model = Model(INPUT_SHAPE)
+    model = Model(INPUT_SHAPE)
     # model(x)
 
 if __name__ == "__main__":
