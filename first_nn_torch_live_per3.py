@@ -1,4 +1,6 @@
 import pathlib
+import time
+import atexit
 
 import torch
 import cv2
@@ -6,6 +8,11 @@ import cv2
 INPUT_SHAPE = (3, 224, 224)
 IMAGES_PATH = pathlib.Path("../animals")
 BATCH_SIZE = 32
+TIME_STAMP = time.strftime("%Y_%m_%d_%H_%M")
+
+@atexit.register
+def clean_up() -> None:
+    torch.save(model, "saves/model_" + str(epoch) + "_" + TIME_STAMP)
 
 class Dataset(torch.utils.data.Dataset):
     """Represent the dataset as an object."""
@@ -113,13 +120,25 @@ def get_dataloaders(dataset: Dataset, train_prop: float, batch_size: int
             batch_size = batch_size)
     return train, validation
 
+def save_code() -> None:
+    with open(__file__, "r") as f:
+        this_code = f.read()
+    with open("saves/code_" + TIME_STAMP + ".py", "w") as f:
+        print(this_code, file=f)
+
 def main():
+    global model, epoch
+    epoch = 0
+    save_code()
     dataset = Dataset(IMAGES_PATH)
     print(f"Found {len(dataset)} images.")
     train, validation = get_dataloaders(dataset, 0.8, BATCH_SIZE)
     model = Model(INPUT_SHAPE).to('mps')
     x = next(iter(train))[0]
     model(x)
+    output_file = open("saves/printout_" + TIME_STAMP + ".txt", "a")
+    # Training Block running epochs and all that
+    output_file.close()
 
 if __name__ == "__main__":
     main()
