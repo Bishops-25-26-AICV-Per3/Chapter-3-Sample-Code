@@ -89,12 +89,28 @@ def main():
     model = Model(INPUT_SHAPE)
     model.model.summary()
 
-    model.model.fit(
+    # Version 1: capture the history.  
+    # Drawback: If you interrupt, you've got nothing.
+    history = model.model.fit(
         train,
         validation_data = validation,
         epochs = 20,
         verbose = 1,
     )
+    with open(filename, 'w') as f:
+        print(history, file=f)
+
+    # Version 2: CSVLogger
+    model.model.fit(
+        train,
+        validation_data = validation,
+        epochs = 20,
+        verbose = 1,
+        callbacks = [
+            tf.keras.callbacks.CSVLogger("saves/tf_test.csv"),
+        ], # Gotta be a list here
+    )
+
 
 if __name__ == "__main__":
     main()

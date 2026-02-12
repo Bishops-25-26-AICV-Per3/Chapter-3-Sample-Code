@@ -3,6 +3,7 @@ import time
 import atexit
 
 import torch
+import torchvision.transforms.v2
 import cv2
 
 INPUT_SHAPE = (3, 224, 224)
@@ -115,6 +116,12 @@ def get_dataloaders(dataset: Dataset, train_prop: float, batch_size: int
             lengths = [train_prop, 1-train_prop],
             generator = generator,
     )
+    print(f"Number of images in training set before augmentation: ", end="")
+    print(f"{len(train_set)}")
+    aug_set = torchvision.transforms.v2.RandomHorizontalFlip(1.0)(train_set)
+    train_set = torch.utils.data.ConcatDataset([train_set, aug_set])
+    print(f"Number of images in training set after augmentation: ", end="")
+    print(f"{len(train_set)}")
     train = torch.utils.data.DataLoader(train_set, batch_size = batch_size)
     validation = torch.utils.data.DataLoader(validation_set, 
             batch_size = batch_size)
